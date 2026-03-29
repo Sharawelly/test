@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APEX — Next-Generation Data Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg:           #080808;
+      --bg-card:      #0F0F12;
+      --bg-card-hov:  #141418;
+      --text:         #EDEDEA;
+      --text-muted:   #6B6B72;
+      --text-dim:     #2E2E36;
+      --accent:       #E8FF57;
+      --accent-dim:   rgba(232,255,87,0.10);
+      --accent-glow:  rgba(232,255,87,0.05);
+      --border:       #1E1E24;
+      --border-acc:   rgba(232,255,87,0.28);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Raleway', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* Noise overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.35;
+    }
+
+    /* ── NAV ────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      padding: 0 4rem; height: 72px;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: background 0.4s, border-bottom 0.4s;
+    }
+    nav.scrolled {
+      background: rgba(8,8,8,0.88);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'Cormorant', serif;
+      font-size: 1.45rem; font-weight: 600;
+      letter-spacing: 0.18em; text-transform: uppercase; color: var(--text);
+    }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--text-muted); text-decoration: none; transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--bg); background: var(--accent);
+      padding: 0.6rem 1.5rem; text-decoration: none; transition: opacity 0.2s;
+    }
+    .nav-cta:hover { opacity: 0.82; }
+
+    /* ── HERO ───────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 9rem 4rem 5rem;
+      position: relative; overflow: hidden;
+    }
+    .hero-bg-word {
+      position: absolute;
+      bottom: -3vw; left: -1vw;
+      font-family: 'Cormorant', serif;
+      font-size: 27vw; font-weight: 700; line-height: 1;
+      color: transparent;
+      -webkit-text-stroke: 1px var(--border);
+      pointer-events: none; user-select: none;
+      letter-spacing: -0.02em; white-space: nowrap;
+    }
+    .hero-glow {
+      position: absolute;
+      top: 20%; right: -10%;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(232,255,87,0.04) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.68rem; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 2rem;
+      opacity: 0; transform: translateY(18px);
+      animation: fadeUp 0.8s ease 0.15s forwards;
+    }
+    .hero-tag::before { content: '//  '; opacity: 0.45; }
+    .hero-h1 {
+      font-family: 'Cormorant', serif;
+      font-size: clamp(3.2rem, 8vw, 8.5rem);
+      font-weight: 300; line-height: 1.02;
+      letter-spacing: -0.02em; max-width: 14ch;
+      margin-bottom: 2.5rem;
+      opacity: 0; transform: translateY(28px);
+      animation: fadeUp 0.9s ease 0.35s forwards;
+    }
+    .hero-h1 em { font-style: italic; color: var(--accent); }
+    .hero-sub {
+      font-size: 0.98rem; font-weight: 400; line-height: 1.75;
+      color: var(--text-muted); max-width: 48ch; margin-bottom: 3rem;
+      opacity: 0; transform: translateY(18px);
+      animation: fadeUp 0.8s ease 0.55s forwards;
+    }
+    .hero-actions {
+      display: flex; align-items: center; gap: 2.2rem;
+      opacity: 0; transform: translateY(18px);
+      animation: fadeUp 0.8s ease 0.72s forwards;
+    }
+    .btn-primary {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--bg); background: var(--accent);
+      padding: 1rem 2.5rem; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 0.75rem;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .btn-primary:hover { background: #f3ff80; transform: translateX(2px); }
+    .btn-primary .arr { transition: transform 0.2s; }
+    .btn-primary:hover .arr { transform: translateX(5px); }
+    .btn-ghost {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-muted); text-decoration: none;
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      transition: color 0.2s;
+    }
+    .btn-ghost:hover { color: var(--text); }
+    .hero-scroll-hint {
+      position: absolute; bottom: 3rem; right: 4rem;
+      display: flex; flex-direction: column; align-items: center; gap: 0.8rem;
+      opacity: 0; animation: fadeIn 1s ease 1.1s forwards;
+    }
+    .scroll-bar {
+      width: 1px; height: 56px;
+      background: linear-gradient(to bottom, var(--text-dim), transparent);
+    }
+    .hero-scroll-hint span {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.58rem; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--text-dim); writing-mode: vertical-rl;
+    }
+
+    /* ── STATS ──────────────────────────────── */
+    .stats {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      display: grid; grid-template-columns: repeat(4,1fr);
+    }
+    .stat-item {
+      padding: 3rem 2.5rem;
+      border-right: 1px solid var(--border);
+      transition: background 0.3s;
+      opacity: 0; transform: translateY(20px);
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-item:hover { background: var(--bg-card); }
+    .stat-item.in { animation: fadeUp 0.7s ease forwards; }
+    .stat-lbl {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--text-muted); margin-bottom: 1.1rem;
+    }
+    .stat-val {
+      font-family: 'Cormorant', serif;
+      font-size: clamp(2.2rem, 3.5vw, 3.8rem);
+      font-weight: 600; line-height: 1;
+      color: var(--text); margin-bottom: 0.5rem;
+    }
+    .stat-val .ac { color: var(--accent); }
+    .stat-note { font-size: 0.78rem; color: var(--text-muted); font-weight: 400; }
+
+    /* ── FEATURES ───────────────────────────── */
+    .features { padding: 8rem 4rem; }
+    .sec-head {
+      display: flex; align-items: flex-end;
+      justify-content: space-between; margin-bottom: 5rem;
+    }
+    .sec-tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.62rem; letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 1.1rem;
+    }
+    .sec-title {
+      font-family: 'Cormorant', serif;
+      font-size: clamp(1.9rem, 3.5vw, 3.2rem);
+      font-weight: 400; line-height: 1.15; max-width: 22ch;
+    }
+    .sec-title em { font-style: italic; color: var(--text-muted); }
+    .sec-link {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-muted); text-decoration: none;
+      display: flex; align-items: center; gap: 0.5rem;
+      transition: color 0.2s; padding-bottom: 0.5rem;
+    }
+    .sec-link:hover { color: var(--accent); }
+
+    .feat-grid {
+      display: grid;
+      grid-template-columns: 1.45fr 1fr 1fr;
+      grid-template-rows: auto auto;
+      gap: 1.5px; background: var(--border);
+    }
+    .feat-card {
+      background: var(--bg-card); padding: 3rem;
+      position: relative; overflow: hidden;
+      transition: background 0.3s;
+      opacity: 0; transform: translateY(22px);
+    }
+    .feat-card.in { animation: fadeUp 0.7s ease forwards; }
+    .feat-card:hover { background: var(--bg-card-hov); }
+    .feat-card.tall { grid-row: span 2; display: flex; flex-direction: column; justify-content: space-between; min-height: 500px; }
+    /* cursor glow */
+    .feat-card::after {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse at var(--mx,50%) var(--my,50%), var(--accent-glow) 0%, transparent 60%);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .feat-card:hover::after { opacity: 1; }
+
+    .feat-num {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.62rem; letter-spacing: 0.18em;
+      color: var(--text-dim); margin-bottom: 2rem;
+    }
+    .feat-icon {
+      width: 46px; height: 46px;
+      background: var(--accent-dim);
+      border: 1px solid var(--border-acc);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 2rem; flex-shrink: 0;
+    }
+    .feat-icon svg { width: 19px; height: 19px; stroke: var(--accent); fill: none; stroke-width: 1.5; }
+    .feat-title {
+      font-family: 'Cormorant', serif;
+      font-size: 1.55rem; font-weight: 600;
+      line-height: 1.2; margin-bottom: 0.9rem;
+    }
+    .feat-card.tall .feat-title { font-size: 2.1rem; }
+    .feat-desc { font-size: 0.855rem; line-height: 1.75; color: var(--text-muted); font-weight: 400; }
+    .feat-badge {
+      display: inline-block;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--accent); background: var(--accent-dim);
+      padding: 0.3rem 0.85rem; margin-top: 1.5rem;
+    }
+    /* mini chart in large card */
+    .mini-chart {
+      background: var(--bg); border: 1px solid var(--border);
+      height: 190px; position: relative; overflow: hidden; margin-top: 2.5rem;
+    }
+    .chart-grid {
+      position: absolute; inset: 0;
+      background-image: linear-gradient(var(--border) 1px,transparent 1px),
+                        linear-gradient(90deg,var(--border) 1px,transparent 1px);
+      background-size: 28px 28px;
+    }
+    .chart-glow {
+      position: absolute; bottom: -50px; left: 50%; transform: translateX(-50%);
+      width: 220px; height: 130px;
+      background: radial-gradient(ellipse, rgba(232,255,87,0.15) 0%, transparent 70%);
+      filter: blur(18px);
+    }
+    .chart-bars {
+      position: absolute; bottom: 18px; left: 18px; right: 18px;
+      display: flex; align-items: flex-end; gap: 5px; height: 90px;
+    }
+    .cbar {
+      flex: 1; border-radius: 1px;
+      background: linear-gradient(to top, var(--accent), rgba(232,255,87,0.25));
+    }
+
+    /* ── TICKER ─────────────────────────────── */
+    .ticker {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 1.4rem 0; overflow: hidden;
+    }
+    .ticker-track {
+      display: flex; width: max-content;
+      animation: ticker 28s linear infinite;
+    }
+    .ticker-item {
+      display: flex; align-items: center; gap: 1.8rem;
+      padding: 0 2.5rem; white-space: nowrap;
+    }
+    .ticker-item span {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .ticker-dot { width: 3px; height: 3px; background: var(--accent); border-radius: 50%; }
+
+    /* ── METRICS ────────────────────────────── */
+    .metrics-section {
+      padding: 8rem 4rem;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; align-items: center;
+    }
+    .metrics-section p { font-size: 0.88rem; line-height: 1.8; color: var(--text-muted); font-weight: 400; margin-bottom: 2.5rem; }
+    .metric-rows { display: flex; flex-direction: column; gap: 1.5px; background: var(--border); }
+    .mrow {
+      background: var(--bg-card); padding: 1.4rem 2rem;
+      display: flex; align-items: center; transition: background 0.2s;
+    }
+    .mrow:hover { background: var(--bg-card-hov); }
+    .mname {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.68rem; letter-spacing: 0.08em; color: var(--text-muted);
+      min-width: 11rem;
+    }
+    .mbar-wrap { flex: 1; height: 2px; background: var(--border); margin: 0 1.8rem; position: relative; }
+    .mbar-fill {
+      position: absolute; left: 0; top: 0; height: 100%;
+      background: var(--accent); width: 0;
+      transition: width 1.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    .mpct {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.72rem; font-weight: 500; color: var(--accent);
+      min-width: 3rem; text-align: right;
+    }
+
+    /* ── QUOTE ──────────────────────────────── */
+    .quote-wrap {
+      padding: 9rem 4rem;
+      border-top: 1px solid var(--border);
+      text-align: center; position: relative; overflow: hidden;
+    }
+    .quote-deco {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-55%);
+      font-family: 'Cormorant', serif; font-size: 22rem; font-weight: 700;
+      color: transparent; -webkit-text-stroke: 1px var(--border);
+      pointer-events: none; line-height: 1; opacity: 0.6;
+    }
+    .quote-text {
+      font-family: 'Cormorant', serif;
+      font-size: clamp(1.4rem, 2.6vw, 2.2rem); font-weight: 300; font-style: italic;
+      line-height: 1.45; max-width: 760px; margin: 0 auto 2rem;
+      position: relative; z-index: 1;
+    }
+    .quote-by {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--text-muted); position: relative; z-index: 1;
+    }
+    .quote-by::before { content: '— '; }
+
+    /* ── CTA ────────────────────────────────── */
+    .cta-section {
+      padding: 8rem 4rem;
+      border-top: 1px solid var(--border);
+      display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;
+    }
+    .cta-title {
+      font-family: 'Cormorant', serif;
+      font-size: clamp(1.9rem, 3.5vw, 3.2rem); font-weight: 400; line-height: 1.15;
+    }
+    .cta-title em { font-style: italic; color: var(--accent); }
+    .cta-right p { font-size: 0.88rem; line-height: 1.8; color: var(--text-muted); font-weight: 400; margin-bottom: 2.5rem; }
+    .cta-btns { display: flex; gap: 1.8rem; align-items: center; }
+
+    /* ── FOOTER ─────────────────────────────── */
+    footer {
+      padding: 3.5rem 4rem;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .footer-logo {
+      font-family: 'Cormorant', serif;
+      font-size: 1.2rem; font-weight: 600;
+      letter-spacing: 0.18em; text-transform: uppercase;
+    }
+    .footer-logo span { color: var(--accent); }
+    .footer-links { display: flex; gap: 2rem; list-style: none; }
+    .footer-links a {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-muted); text-decoration: none; transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--text); }
+    .footer-copy {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.6rem; letter-spacing: 0.06em; color: var(--text-dim);
+    }
+
+    /* ── ANIMATIONS ─────────────────────────── */
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+    @keyframes ticker {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-logo">APE<span>X</span></div>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#metrics">Analytics</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+  </ul>
+  <a href="#" class="nav-cta">Get Access →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg-word">APEX</div>
+  <div class="hero-glow"></div>
+  <div class="hero-tag">Platform v2.4 — Now Live</div>
+  <h1 class="hero-h1">Data that <em>moves</em> at the speed of thought</h1>
+  <p class="hero-sub">APEX transforms complex data streams into actionable intelligence. Built for teams who demand precision, speed, and clarity in everything they do.</p>
+  <div class="hero-actions">
+    <a href="#" class="btn-primary">Start Free Trial <span class="arr">→</span></a>
+    <a href="#features" class="btn-ghost">↓ Explore Features</a>
+  </div>
+  <div class="hero-scroll-hint">
+    <div class="scroll-bar"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="stats" id="stats">
+  <div class="stat-item">
+    <div class="stat-lbl">Active Users</div>
+    <div class="stat-val"><span class="counter" data-target="94750">0</span><span class="ac">+</span></div>
+    <div class="stat-note">Across 48 countries</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-lbl">Data Processed</div>
+    <div class="stat-val"><span class="counter" data-target="2.8" data-suffix="B">0</span><span class="ac"> rows/day</span></div>
+    <div class="stat-note">Average daily throughput</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-lbl">Uptime SLA</div>
+    <div class="stat-val"><span class="counter" data-target="99.99" data-decimals="2">0</span><span class="ac">%</span></div>
+    <div class="stat-note">Guaranteed reliability</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-lbl">Query Speed</div>
+    <div class="stat-val"><span class="ac">&lt;</span><span class="counter" data-target="12">0</span><span class="ac">ms</span></div>
+    <div class="stat-note">P99 response latency</div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="sec-head">
+    <div>
+      <div class="sec-tag">Core Capabilities</div>
+      <h2 class="sec-title">Everything you need to build <em>faster</em></h2>
+    </div>
+    <a href="#" class="sec-link">View all features →</a>
+  </div>
+
+  <div class="feat-grid">
+    <!-- Large card -->
+    <div class="feat-card tall">
+      <div>
+        <div class="feat-num">01 / INTELLIGENCE</div>
+        <div class="feat-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <div class="feat-title">Real-Time Intelligence Engine</div>
+        <p class="feat-desc">Process and analyze millions of data points per second with our proprietary streaming architecture. No delays, no batch windows — pure, instantaneous insight delivered at the moment you need it.</p>
+        <div class="feat-badge">Core Infrastructure</div>
+      </div>
+      <div class="mini-chart">
+        <div class="chart-grid"></div>
+        <div class="chart-glow"></div>
+        <div class="chart-bars">
+          <div class="cbar" style="height:42%"></div>
+          <div class="cbar" style="height:68%"></div>
+          <div class="cbar" style="height:55%"></div>
+          <div class="cbar" style="height:88%"></div>
+          <div class="cbar" style="height:62%"></div>
+          <div class="cbar" style="height:78%"></div>
+          <div class="cbar" style="height:48%"></div>
+          <div class="cbar" style="height:94%"></div>
+          <div class="cbar" style="height:71%"></div>
+          <div class="cbar" style="height:58%"></div>
+          <div class="cbar" style="height:83%"></div>
+          <div class="cbar" style="height:52%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feat-card">
+      <div class="feat-num">02 / SECURITY</div>
+      <div class="feat-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div class="feat-title">Enterprise-Grade Security</div>
+      <p class="feat-desc">SOC 2 Type II certified with end-to-end encryption, granular RBAC, and audit logs on every action. Your data stays yours.</p>
+      <div class="feat-badge">Security & Compliance</div>
+    </div>
+
+    <div class="feat-card">
+      <div class="feat-num">03 / SCALE</div>
+      <div class="feat-icon">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      </div>
+      <div class="feat-title">Infinite Horizontal Scale</div>
+      <p class="feat-desc">Auto-scaling infrastructure that elastically grows with your workloads. From startup to enterprise — zero migrations needed.</p>
+      <div class="feat-badge">Infrastructure</div>
+    </div>
+
+    <div class="feat-card">
+      <div class="feat-num">04 / CONNECT</div>
+      <div class="feat-icon">
+        <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+      </div>
+      <div class="feat-title">Universal Integrations</div>
+      <p class="feat-desc">Connect to 200+ data sources out of the box. REST APIs, webhooks, and native SDKs for every major platform.</p>
+      <div class="feat-badge">Integrations</div>
+    </div>
+
+    <div class="feat-card">
+      <div class="feat-num">05 / INSIGHTS</div>
+      <div class="feat-icon">
+        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <div class="feat-title">Predictive Analytics</div>
+      <p class="feat-desc">ML-powered forecasting that identifies trends before they emerge. Smart anomaly detection, alerts, and automated recommendations.</p>
+      <div class="feat-badge">AI / ML</div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    <div class="ticker-item"><span>Real-Time Analytics</span><div class="ticker-dot"></div></div>
+    <div class="ticker-item"><span>Data Pipeline</span><div class="ticker-dot"></div></div>
+    <div class="ticker-item"><span>ML Forecasting</span><div class="ticker-dot"></div></div>
+    <div class="ticker-item"><span>SOC 2 Certified</span><div class="ticker-dot"></div></div>
+    <div class="ticker-item"><span>200+ Integrations</span><div class="ticker-dot"></div></div>
+    <div class="ticker-item"><span>Infinite Scale</span><div class="ticker-dot"></div></div>
+    <div class="ticker-item"><span>Sub-12ms Latency</span><div class="ticker-dot"></div></div>
+    <div class="ticker-item"><span>99.99% Uptime</span><div class="ticker-dot"></div></div>
+    <!-- duplicate for seamless loop -->
+    <div class="ticker-item"><span>Real-Time Analytics</span><div class="ticker-dot"></div></div>
+    <div class="ticker-item"><span>Data Pipeline</span><div class="ticker-dot"></div></div>
+    <div class="ticker-item"><span>ML Forecasting</span><div class="ticker-dot"></div></div>
+    <div class="ticker-item"><span>SOC 2 Certified</span><div class="ticker-dot"></div></div>
+    <div class="ticker-item"><span>200+ Integrations</span><div class="ticker-dot"></div></div>
+    <div class="ticker-item"><span>Infinite Scale</span><div class="ticker-dot"></div></div>
+    <div class="ticker-item"><span>Sub-12ms Latency</span><div class="ticker-dot"></div></div>
+    <div class="ticker-item"><span>99.99% Uptime</span><div class="ticker-dot"></div></div>
+  </div>
+</div>
+
+<!-- PERFORMANCE METRICS -->
+<section class="metrics-section" id="metrics">
+  <div>
+    <div class="sec-tag">Performance Benchmarks</div>
+    <h2 class="sec-title" style="margin-bottom:1.5rem;">Numbers that <em>prove</em> it</h2>
+    <p>Our platform consistently outperforms industry standards across every key metric. From ingestion speed to query latency, APEX sets the new baseline for what modern data infrastructure should deliver.</p>
+    <a href="#" class="btn-primary">View Full Benchmarks <span class="arr">→</span></a>
+  </div>
+  <div class="metric-rows" id="mrows">
+    <div class="mrow">
+      <span class="mname">Query Performance</span>
+      <div class="mbar-wrap"><div class="mbar-fill" data-pct="96"></div></div>
+      <span class="mpct">96%</span>
+    </div>
+    <div class="mrow">
+      <span class="mname">Data Compression</span>
+      <div class="mbar-wrap"><div class="mbar-fill" data-pct="88"></div></div>
+      <span class="mpct">88%</span>
+    </div>
+    <div class="mrow">
+      <span class="mname">Throughput Efficiency</span>
+      <div class="mbar-wrap"><div class="mbar-fill" data-pct="94"></div></div>
+      <span class="mpct">94%</span>
+    </div>
+    <div class="mrow">
+      <span class="mname">Cache Hit Rate</span>
+      <div class="mbar-wrap"><div class="mbar-fill" data-pct="91"></div></div>
+      <span class="mpct">91%</span>
+    </div>
+    <div class="mrow">
+      <span class="mname">Replication Speed</span>
+      <div class="mbar-wrap"><div class="mbar-fill" data-pct="83"></div></div>
+      <span class="mpct">83%</span>
+    </div>
+    <div class="mrow">
+      <span class="mname">Fault Tolerance</span>
+      <div class="mbar-wrap"><div class="mbar-fill" data-pct="99"></div></div>
+      <span class="mpct">99%</span>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<section class="quote-wrap">
+  <div class="quote-deco">"</div>
+  <p class="quote-text">"APEX fundamentally changed how we think about our data. What used to take hours of engineering time now happens automatically — and the insights we're getting are orders of magnitude better."</p>
+  <div class="quote-by">Sarah Chen, CTO at Meridian Health</div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-title">Ready to unlock the full power of your <em>data</em>?</div>
+  <div class="cta-right">
+    <p>Join 94,000+ data professionals who trust APEX to power their most critical workflows. Get started in minutes — no credit card required, no engineering time needed.</p>
+    <div class="cta-btns">
+      <a href="#" class="btn-primary">Start Free Trial <span class="arr">→</span></a>
+      <a href="#" class="btn-ghost">Schedule a demo →</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">APE<span>X</span></div>
+  <ul class="footer-links">
+    <li><a href="#">Product</a></li>
+    <li><a href="#">Pricing</a></li>
+    <li><a href="#">Docs</a></li>
+    <li><a href="#">Blog</a></li>
+    <li><a href="#">Careers</a></li>
+    <li><a href="#">Status</a></li>
+  </ul>
+  <div class="footer-copy">© 2026 APEX Technologies, Inc.</div>
+</footer>
+
+<script>
+  // Nav scroll
+  const nav = document.getElementById('nav');
+  addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 50));
+
+  // Staggered reveal observer
+  const reveal = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const d = +e.target.dataset.delay || 0;
+        setTimeout(() => e.target.classList.add('in'), d);
+        reveal.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.stat-item').forEach((el, i) => {
+    el.dataset.delay = i * 90; reveal.observe(el);
+  });
+  document.querySelectorAll('.feat-card').forEach((el, i) => {
+    el.dataset.delay = i * 75; reveal.observe(el);
+  });
+
+  // Animated counters
+  function runCounter(el) {
+    const target = parseFloat(el.dataset.target);
+    const dec    = parseInt(el.dataset.decimals || 0);
+    const suf    = el.dataset.suffix || '';
+    const dur    = 2000;
+    const t0     = performance.now();
+    const tick   = now => {
+      const p = Math.min((now - t0) / dur, 1);
+      const e = 1 - Math.pow(1 - p, 3);
+      const v = target * e;
+      el.textContent = suf === 'B'
+        ? v.toFixed(1) + 'B'
+        : dec > 0 ? v.toFixed(dec) : Math.round(v).toLocaleString();
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  const cObs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { runCounter(e.target); cObs.unobserve(e.target); } });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('.counter').forEach(el => cObs.observe(el));
+
+  // Metric bars
+  const mObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.querySelectorAll('.mbar-fill').forEach((bar, i) => {
+          setTimeout(() => { bar.style.width = bar.dataset.pct + '%'; }, i * 110);
+        });
+        mObs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.2 });
+  const mrows = document.getElementById('mrows');
+  if (mrows) mObs.observe(mrows);
+
+  // Feature card cursor glow
+  document.querySelectorAll('.feat-card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+      card.style.setProperty('--my', ((e.clientY - r.top)  / r.height * 100) + '%');
+    });
+  });
+</script>
+</body>
+</html>

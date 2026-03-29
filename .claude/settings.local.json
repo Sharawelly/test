@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(update-config)",
+      "Bash(powershell.exe -Command \"Add-Type -AssemblyName presentationCore; $m = New-Object System.Windows.Media.MediaPlayer; $m.Open\\([uri]''''D:/zekk/heheheha.mp3''''\\); $m.Play\\(\\); Start-Sleep 3\")",
+      "Bash(echo \"exit: $?\")",
+      "Bash(jq:*)",
+      "Bash(powershell.exe -Command \"Get-Content 'D:/zekk/.claude/settings.local.json' | ConvertFrom-Json | Select-Object -ExpandProperty hooks | Select-Object -ExpandProperty Stop | ForEach-Object { $_.hooks } | ForEach-Object { $_.command }\")",
+      "Bash(pwsh --version)"
+    ]
+  },
+  "enabledPlugins": {
+    "frontend-design@claude-plugins-official": true
+  }
+}
